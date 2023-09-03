@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Calculator</title>
+  </head>
+  <body>
+    <div class="background-container"></div>
+    <div class="calculator">
+      <div class="screen">0</div>
+      <div class="keys">
+        <div class="clear" id="unselect">C</div>
+        <div class="backspace" id="unselect">⌫</div>
+        <div class="operator" id="select">/</div>
+        <div class="operator" id="select">*</div>
+        <div class="number" id="select">7</div>
+        <div class="number" id="select">8</div>
+        <div class="number" id="select">9</div>
+        <div class="operator" id="select">-</div>
+        <div class="number" id="select">4</div>
+        <div class="number" id="select">5</div>
+        <div class="number" id="select">6</div>
+        <div class="operator" id="select">+</div>
+        <div class="number" id="select">1</div>
+        <div class="number" id="select">2</div>
+        <div class="number" id="select">3</div>
+        <div class="equals" id="unselect" onclick="calculate()">=</div>
+        <div class="number" id="select">0</div>
+        <div class="decimal" id="select">.</div>
+        <div class="power" id="select">^</div>
+        <div class="factorial" id="select">!</div>
+      </div>
+    </div>
+    <script>
+      // Control the geometric objects in the background
+      const backgroundContainer = document.querySelector(
+        ".background-container"
+      );
+
+      function createGeometricObject() {
+        const object = document.createElement("div");
+        object.classList.add("geometric-object");
+        const size = Math.random() * 40 + 10; // Random size between 10px and 50px
+        object.style.width = size + "px";
+        object.style.height = size + "px";
+        const x = Math.random() * 100;
+        const y = Math.random() * 100;
+        object.style.left = x + "%";
+        object.style.top = y + "%";
+        // Apply the transition when the object is added
+        setTimeout(() => {
+          object.style.opacity = 1;
+        }, 10);
+        backgroundContainer.appendChild(object);
+
+        object.addEventListener("animationiteration", () => {
+          // Remove the object when it reaches the end of its animation cycle
+          backgroundContainer.removeChild(object);
+        });
+      }
+
+      // Create new geometric objects at intervals
+      setInterval(createGeometricObject, 1000);
+
+      const operators = ["-", "+", "*", "/", "^", "!"];
+      let num1 = 0;
+      let num2 = 0;
+      let oper = "";
+      var output = "";
+      const screen = document.querySelector(".screen");
+
+      function display() {
+        const keys = document.querySelector(".keys");
+        const select = keys.querySelectorAll("#select");
+        const erase = document.querySelector(".backspace");
+
+        let index;
+
+        select.forEach((element) => {
+          element.addEventListener("click", function () {
+            output += element.textContent + "";
+            screen.textContent = output;
+            for (i = 0; i < operators.length; i++) {
+              if (output.includes(operators[i])) {
+                index = output.indexOf(operators[i]);
+                oper = operators[i];
+                num2 = parseFloat(output.substring(index + 1, output.length));
+                num1 = parseFloat(output.substring(0, index));
+              }
+            }
+          });
+        });
+        erase.addEventListener("click", function () {
+          if (output.length === 0) {
+            screen.textContent = "";
+          } else {
+            output = output.slice(0, -1);
+            screen.textContent = output;
+          }
+        });
+
+        const clear = document.querySelector(".clear");
+        clear.addEventListener("click", function () {
+          output = "";
+          num1 = 0;
+          num2 = 0;
+          oper = "";
+          screen.textContent = "";
+        });
+
+        // Keyboard Support
+        document.addEventListener("keydown", function (event) {
+          const key = event.key;
+
+          if (/[0-9]/.test(key)) {
+            // Numeric keys
+            output += key;
+            screen.textContent = output;
+          } else if (operators.includes(key)) {
+            // Operator keys
+            output += key;
+            screen.textContent = output;
+            for (i = 0; i < operators.length; i++) {
+              if (output.includes(operators[i])) {
+                index = output.indexOf(operators[i]);
+                oper = operators[i];
+                num2 = parseFloat(output.substring(index + 1, output.length));
+                num1 = parseFloat(output.substring(0, index));
+              }
+            }
+          } else if (key === "=" || key === "Enter") {
+            // Equals key or Enter key
+            calculate();
+            output = "";
+            num1 = 0;
+            num2 = 0;
+            oper = "";
+          } else if (key === "Backspace") {
+            // Backspace key
+            if (output.length === 0) {
+              screen.textContent = "";
+            } else {
+              output = output.slice(0, -1);
+              screen.textContent = output;
+            }
+          } else if (key === ".") {
+            // Decimal point key
+            if (!output.includes(".")) {
+              output += ".";
+              screen.textContent = output;
+            }
+          }
+        });
+      }
+
+      const equals = document.querySelector(".equals");
+      equals.addEventListener("click", function () {
+        if (num1 && num2 && oper) {
+          calculate();
+          // Clear variables and output after displaying the result
+          output = screen.textContent;
+          num1 = parseFloat(screen.textContent);
+          num2 = 0;
+          oper = "";
+        }
+      });
+
+      function calculate() {
+        let answer = 0;
+        switch (oper) {
+          case "+":
+            answer = num1 + num2;
+            //screen.textContent = answer;
+            break;
+          case "-":
+            answer = num1 - num2;
+            //screen.textContent = answer;
+            break;
+          case "*":
+            answer = num1 * num2;
+            //screen.textContent = answer;
+            break;
+          case "/":
+            if (num2 !== 0) {
+              answer = num1 / num2;
+              //screen.textContent = num1 / num2;
+            } else {
+              screen.textContent = "Invalid";
+            }
+            break;
+
+          case "^":
+            answer = num1 ** num2;
+            //screen.textContent = num1 ** num2;
+            break;
+
+          case "!":
+            var result = 1;
+            for (var i = 2; i <= num1; i++) {
+              result *= i;
+            }
+            answer = result;
+        }
+        screen.textContent = answer;
+        num1 = answer;
+      }
+
+      display();
+    </script>
+  </body>
+</html>
